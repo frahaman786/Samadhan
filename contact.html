@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us</title>
+    <link rel="stylesheet" href="jeet.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Background color for the About section */
+.container4 {
+    background-color: #237282;
+    padding: 50px 0;
+    text-align: center;
+}
+body{
+    background-color: #237282;
+}
+h1{
+    color: white;
+}
+
+/* Title Styling */
+.about-container h1 {
+    color: white;
+    font-size: 36px;
+    margin-bottom: 30px;
+}
+
+/* Team Member Container (Side by Side Layout) */
+.team {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+/* Individual Team Member Styling */
+.team-member {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+    width: 250px;
+    transition: 0.3s;
+}
+
+/* Profile Picture */
+.profile-pic {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #0077b5;
+    margin-bottom: 10px;
+}
+
+/* LinkedIn Button */
+.linkedin-btn {
+    display: inline-block;
+    padding: 8px 15px;
+    background-color: #0077b5;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.linkedin-btn:hover {
+    background-color: #005582;
+}
+
+    </style>
+</head>
+<body>
+    <div class="container4">
+        <h1>Meet Our Team</h1>
+        <div class="team">
+            <!-- Team Member 1 -->
+            <div class="team-member">
+                <img src="fazley.jpg" alt="Fazley Rahaman" class="profile-pic">
+                <h2>Fazley Rahaman Molla</h2>
+                <p>Frontend Developer</p>
+                <p>
+                    <a href="https://www.linkedin.com/in/fazley-rahaman-m-647118304/" target="_blank" class="linkedin-btn">
+                        <i class="fab fa-linkedin"></i> Connect on LinkedIn
+                    </a>
+                </p>
+            </div>
+
+            <!-- Team Member 2 -->
+            <div class="team-member">
+                <img src="arpan.jpeg" alt="Team Member 2" class="profile-pic">
+                <h2>Arpan Paul</h2>
+                <p>Backend Developer</p>
+                <p>
+                    <a href="https://www.linkedin.com/in/arpan-paul-procode" target="_blank" class="linkedin-btn">
+                        <i class="fab fa-linkedin"></i> Connect on LinkedIn
+                    </a>
+                </p>
+            </div>
+
+            <!-- Team Member 3 -->
+            <div class="team-member">
+                <img src="abhi.jpeg" alt="Team Member 3" class="profile-pic">
+                <h2>Abhimanyu Kumar</h2>
+                <p>Researcher</p>
+                <p>
+                    <a href="https://www.linkedin.com/in/abhimanyu-kumar-4a0730262/?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" class="linkedin-btn">
+                        <i class="fab fa-linkedin"></i> Connect on LinkedIn
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

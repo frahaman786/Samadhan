@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Image-to-Text</title>
+    <link rel="stylesheet" href="jeet.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.0.2/tesseract.min.js"></script>
+    <style>
+        .container {
+            font-family:  'Creepster', cursive;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #237282;
+            margin: 0;
+        }
+        .content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>AI Image-to-Text</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+            </ul>
+        </nav>
+    </header>
+    <div class="container">
+        <section class="content">
+            <h2>Extract Text from Image</h2>
+            <input type="file" id="imageInput" accept="image/*">
+            <button onclick="extractText()">Extract Text</button>
+            <p id="outputText">Extracted text will appear here...</p>
+        </section>
+    </div>
+
+    
+
+    <script>
+        function extractText() {
+            const imageInput = document.getElementById("imageInput").files[0];
+            const outputText = document.getElementById("outputText");
+
+            if (!imageInput) {
+                outputText.innerText = "Please upload an image first!";
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                const imageData = event.target.result;
+                outputText.innerText = "Processing... Please wait.";
+
+                Tesseract.recognize(
+                    imageData,
+                    'eng',
+                    {
+                        logger: m => console.log(m)
+                    }
+                ).then(({ data: { text } }) => {
+                    outputText.innerText = text.trim() || "No text found!";
+                }).catch(error => {
+                    outputText.innerText = "Error extracting text!";
+                    console.error(error);
+                });
+            };
+
+            reader.readAsDataURL(imageInput);
+        }
+    </script>
+
+</body>
+</html>

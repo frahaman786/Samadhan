@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Translation</title>
+    <link rel="stylesheet" href="jeet.css">
+    <style>
+        .container {
+            font-family:  'Creepster', cursive;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #237282;
+            margin: 0;
+        }
+        .content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Text Translation</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+            </ul>
+        </nav>
+    </header>
+    <div class="container">
+        <section class="content">
+            <h2>Enter Text to Translate</h2>
+            <textarea id="textInput" placeholder="Type text here..."></textarea>
+            <select id="language">
+            <option value="es">Spanish</option>
+            <option value="fr">French</option>
+            <option value="hi">Hindi</option>
+            <option value="bn">Bengali</option>
+            </select>
+            <button onclick="translateText()">Translate</button>
+            <p id="output"></p>
+        </section>
+    </div>
+
+    
+
+    <script>
+        async function translateText() {
+            const text = document.getElementById('textInput').value;
+            const targetLang = document.getElementById('language').value;
+
+            const response = await fetch(`https://api.mymemory.translated.net/get?q=${text}&langpair=en|${targetLang}`);
+            const data = await response.json();
+
+            document.getElementById('output').innerText = data.responseData.translatedText;
+        }
+    </script>
+
+</body>
+</html>

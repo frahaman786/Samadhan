@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Scheduler</title>
+    <link rel="stylesheet" href="jeet.css">
+    <style>
+        .container {
+            font-family:  'Creepster', cursive;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #237282;
+            margin: 0;
+        }
+        .content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>AI Scheduler</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+            </ul>
+        </nav>
+    </header>
+    <div class="container">
+        <section class="content">
+            <h2>Smart Task Scheduling</h2>
+            <input type="text" id="taskInput" placeholder="Enter your task (e.g., Study, Exercise)">
+            <button onclick="scheduleTask()">Generate Schedule</button>
+            <p id="scheduleOutput"></p>
+        </section>
+    </div>
+    
+
+    <script>
+        function scheduleTask() {
+            const task = document.getElementById('taskInput').value.trim().toLowerCase();
+            let bestTime = '';
+
+            if (!task) {
+                document.getElementById('scheduleOutput').innerText = "Please enter a task!";
+                return;
+            }
+
+            // Smart scheduling logic
+            const taskTimes = {
+                "study": "6:00 AM - Best time for focus & learning.",
+                "exercise": "6:30 AM - Morning is best for energy boost.",
+                "meditation": "7:00 AM - Helps to start the day calmly.",
+                "work": "9:00 AM - Peak productivity hours.",
+                "lunch": "1:00 PM - Take a break & recharge.",
+                "reading": "8:00 PM - Ideal for relaxation.",
+                "sleep": "10:30 PM - Maintain a healthy sleep cycle.",
+                "Breakfast": "7:30 AM - Maintain a healthy time for breakfast.", 
+            };
+
+            bestTime = taskTimes[task] || "Anytime that suits you! AI recommends maintaining consistency.";
+
+            document.getElementById('scheduleOutput').innerText = `⏳ Recommended Time: ${bestTime}`;
+        }
+    </script>
+
+</body>
+</html>
