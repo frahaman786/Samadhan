@@ -1,6 +1,6 @@
 # Samadhan
 #Your AI Assistant Partner 
-<h3 Here are short descriptions for each feature in your project:
+<h3 Here are short descriptions for each feature in your project:</h3>
 
 1. Image to Text – Extracts text from images using AI-powered OCR technology, making it easy to convert printed or handwritten text into digital format.
 
