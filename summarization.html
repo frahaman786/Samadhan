@@ -23,6 +23,32 @@
             max-width: 500px;
             text-align: center;
         }
+        #textInput {
+            width: 100%;
+            min-height: 150px;
+            margin-bottom: 10px;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        #output {
+            text-align: left;
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 5px;
+            min-height: 50px;
+        }
+        button {
+            padding: 8px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
     </style>
 </head>
 <body>
@@ -38,34 +64,262 @@
     <div class="container">
         <div class="content">
         <h2>Enter Text to Summarize</h2>
+        <select id="summarization-method" style="margin-bottom: 10px; padding: 5px;">
+            <option value="browser">Browser-Based Summarization</option>
+            <option value="huggingface">Hugging Face API (Not Recommended)</option>
+        </select>
         <textarea id="textInput" placeholder="Paste your long text here..."></textarea>
         <button onclick="summarizeText()">Summarize</button>
+        <div id="loading" style="display: none; margin-top: 10px; font-style: italic;">Processing text...</div>
         <p id="output"></p>
         </div>
     </div>
 
-    
-
     <script>
+        // Improved browser-based summarization function
+        function browserSummarize(text) {
+            // Check if text is too short
+            if (text.length < 100) {
+                return text;
+            }
+            
+            // Split text into sentences
+            let sentences = [];
+            try {
+                // Use a more reliable regex for sentence splitting
+                sentences = text.match(/[^.!?]+[.!?]+/g) || [];
+                
+                // Filter out any tiny sentences (likely parsing artifacts)
+                sentences = sentences.filter(s => s.trim().length > 10);
+            } catch (e) {
+                // If regex fails, use a simpler split approach
+                sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 10);
+            }
+            
+            // If very few sentences, don't summarize
+            if (sentences.length <= 3) {
+                return text;
+            }
+            
+            // Get all words and their frequencies
+            const allWords = text.toLowerCase()
+                .replace(/[^\w\s]/g, '')  // Remove punctuation
+                .split(/\s+/)             // Split by whitespace
+                .filter(word => word.length > 3 && !isStopWord(word));
+                
+            // Calculate word frequency
+            const wordFreq = {};
+            allWords.forEach(word => {
+                wordFreq[word] = (wordFreq[word] || 0) + 1;
+            });
+            
+            // Find max frequency for normalization
+            const maxFreq = Math.max(...Object.values(wordFreq));
+            
+            // Calculate sentence scores
+            const sentenceScores = sentences.map(sentence => {
+                const words = sentence.toLowerCase()
+                    .replace(/[^\w\s]/g, '')
+                    .split(/\s+/)
+                    .filter(word => word.length > 3 && !isStopWord(word));
+                
+                // Score based on word frequency, position, and sentence length
+                let score = 0;
+                words.forEach(word => {
+                    if (wordFreq[word]) {
+                        // Normalize score by max frequency
+                        score += wordFreq[word] / maxFreq;
+                    }
+                });
+                
+                // Normalize by sentence length (favor medium-length sentences)
+                const lengthFactor = Math.min(1, 20 / Math.max(10, words.length));
+                score = score * lengthFactor;
+                
+                return { sentence, score };
+            });
+            
+            // Determine number of sentences for summary based on input length
+            const summaryLength = Math.max(
+                3, 
+                Math.min(7, Math.ceil(sentences.length * 0.3))
+            );
+            
+            // Select top sentences and sort them by original order
+            const topSentences = sentenceScores
+                .sort((a, b) => b.score - a.score)
+                .slice(0, summaryLength);
+                
+            // Sort by original position
+            topSentences.sort((a, b) => {
+                return sentences.indexOf(a.sentence) - sentences.indexOf(b.sentence);
+            });
+            
+            // Join selected sentences
+            return topSentences.map(item => item.sentence.trim()).join(' ');
+        }
+        
+        // Helper function to check for common stop words
+        function isStopWord(word) {
+            const stopWords = [
+                'the', 'and', 'a', 'an', 'in', 'on', 'at', 'to', 'for', 'with', 
+                'by', 'about', 'as', 'of', 'that', 'this', 'is', 'are', 'was', 
+                'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 
+                'did', 'but', 'or', 'if', 'then', 'else', 'when', 'than', 'what',
+                'who', 'whom', 'which', 'why', 'how', 'from'
+            ];
+            return stopWords.includes(word.toLowerCase());
+        }
+        
+        // Function to summarize using TextRank-inspired algorithm
+        function textRankSummarize(text, numSentences = 5) {
+            // Split text into sentences
+            const sentences = text.match(/[^.!?]+[.!?]+/g) || [];
+            if (sentences.length <= numSentences) {
+                return text;
+            }
+            
+            // Create similarity matrix between sentences
+            const similarityMatrix = Array(sentences.length).fill().map(() => Array(sentences.length).fill(0));
+            
+            // Calculate similarity between each pair of sentences
+            for (let i = 0; i < sentences.length; i++) {
+                for (let j = 0; j < sentences.length; j++) {
+                    if (i !== j) {
+                        similarityMatrix[i][j] = calculateSimilarity(sentences[i], sentences[j]);
+                    }
+                }
+            }
+            
+            // Calculate score for each sentence (simplified TextRank)
+            const scores = Array(sentences.length).fill(1); // Initialize with 1
+            const dampingFactor = 0.85;
+            const iterations = 10;
+            
+            // Run the algorithm for a fixed number of iterations
+            for (let iter = 0; iter < iterations; iter++) {
+                const newScores = Array(sentences.length).fill(0);
+                
+                for (let i = 0; i < sentences.length; i++) {
+                    for (let j = 0; j < sentences.length; j++) {
+                        if (i !== j) {
+                            // Add weight from other sentences
+                            newScores[i] += dampingFactor * (similarityMatrix[j][i] * scores[j]);
+                        }
+                    }
+                    // Add damping factor
+                    newScores[i] += (1 - dampingFactor);
+                }
+                
+                // Update scores
+                for (let i = 0; i < scores.length; i++) {
+                    scores[i] = newScores[i];
+                }
+            }
+            
+            // Select top sentences
+            const indexedScores = scores.map((score, index) => ({ score, index }));
+            indexedScores.sort((a, b) => b.score - a.score);
+            
+            const topIndices = indexedScores.slice(0, numSentences).map(item => item.index);
+            topIndices.sort((a, b) => a - b); // Sort by position in original text
+            
+            // Reconstruct summary
+            return topIndices.map(index => sentences[index].trim()).join(' ');
+        }
+        
+        // Helper function to calculate similarity between two sentences
+        function calculateSimilarity(sentence1, sentence2) {
+            // Get words for each sentence
+            const words1 = sentence1.toLowerCase().replace(/[^\w\s]/g, '').split(/\s+/);
+            const words2 = sentence2.toLowerCase().replace(/[^\w\s]/g, '').split(/\s+/);
+            
+            // Find common words
+            const intersection = words1.filter(word => words2.includes(word)).length;
+            
+            // Calculate similarity (Jaccard coefficient)
+            const union = new Set([...words1, ...words2]).size;
+            return union === 0 ? 0 : intersection / union;
+        }
+        
         async function summarizeText() {
             const text = document.getElementById('textInput').value;
-            const apiKey: ;
-
-            const response = await fetch("https://api.openai.com/v1/completions", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${apiKey}`
-                },
-                body: JSON.stringify({
-                    model: "gpt-4",
-                    prompt: `Summarize this text: ${text}`,
-                    max_tokens: 100
-                })
-            });
-
-            const data = await response.json();
-            document.getElementById('output').innerText = data.choices[0].text;
+            const method = document.getElementById('summarization-method').value;
+            const outputElement = document.getElementById('output');
+            const loadingElement = document.getElementById('loading');
+            
+            if (!text.trim()) {
+                outputElement.innerText = "Please enter some text to summarize.";
+                return;
+            }
+            
+            // Show loading indicator
+            loadingElement.style.display = "block";
+            outputElement.innerText = "";
+            
+            try {
+                let summary = "";
+                
+                if (method === 'huggingface') {
+                    try {
+                        // Try with the Hugging Face API
+                        const response = await fetch("https://api-inference.huggingface.co/models/facebook/bart-large-cnn", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                inputs: text,
+                                parameters: {
+                                    max_length: 150,
+                                    min_length: 40,
+                                    do_sample: false
+                                }
+                            }),
+                            timeout: 10000 // 10 second timeout
+                        });
+                        
+                        if (!response.ok) {
+                            throw new Error(`API returned ${response.status}: ${response.statusText}`);
+                        }
+                        
+                        const data = await response.json();
+                        
+                        if (data.error) {
+                            throw new Error(data.error);
+                        }
+                        
+                        summary = data[0]?.summary_text;
+                        
+                        // Check if summary is valid
+                        if (!summary || summary.includes("waiting for model")) {
+                            throw new Error("Model not available");
+                        }
+                    } catch (apiError) {
+                        // Fallback to browser-based methods if the API fails
+                        summary = "Hugging Face API is unavailable. Using browser-based summarization instead:\n\n";
+                        summary += textRankSummarize(text);
+                    }
+                } else {
+                    // Use improved browser-based methods
+                    // Try both methods and use the longer/better one
+                    const summary1 = browserSummarize(text);
+                    const summary2 = textRankSummarize(text);
+                    
+                    // Use the better summary (usually the longer one is better)
+                    summary = summary1.length > summary2.length ? summary1 : summary2;
+                }
+                
+                // Display the summary
+                outputElement.innerText = summary || "Could not generate a summary. Please try with different text.";
+                
+            } catch (error) {
+                // Handle errors
+                outputElement.innerText = "An error occurred during summarization. Using simple extraction method:\n\n" + browserSummarize(text);
+            } finally {
+                // Hide loading indicator
+                loadingElement.style.display = "none";
+            }
         }
     </script>
 
