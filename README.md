@@ -1,4 +1,5 @@
 # Samadhan
+# This Project made during a hackathon which is organised by JIS College Of Engineering 
 #Your AI Assistant Partner 
 <h3 Here are short descriptions for each feature in your project:</h3>
 
